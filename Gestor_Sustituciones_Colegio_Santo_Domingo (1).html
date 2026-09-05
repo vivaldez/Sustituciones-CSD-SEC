@@ -1,0 +1,4815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestor de Sustituciones - Colegio Santo Domingo</title>
+  <style>
+    :root {
+      --bg-paper: #FAF9F6;
+      --card-bg: #FFFFFF;
+      --border-muted: #E5E2D9;
+      --border-focus: #2D4F3C;
+      --primary-dark: #2D4F3C;
+      --primary-accent: #2D4F3C;
+      --primary-light: #FAF6EE;
+      --text-dark: #1F2937;
+      --text-muted: #6B7280;
+      --accent-gold: #C5A059;
+      --accent-gold-light: #FAF6EE;
+      --status-green: #2D4F3C;
+      --status-green-bg: #D1FAE5;
+      --status-green-border: #A7F3D0;
+      --status-red: #B45239;
+      --status-red-bg: #FEE2E2;
+      --status-red-border: #FCA5A5;
+      --font-serif: Georgia, 'Times New Roman', serif;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+      --font-mono: "Courier New", Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-paper);
+      color: var(--text-dark);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.5;
+      padding: 24px 16px 48px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--primary-dark);
+      color: #FFF;
+      padding: 24px 28px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(27,56,43,0.15);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    header h1 {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    header .subtitle {
+      font-size: 13px;
+      color: #C8DDD0;
+      margin-top: 4px;
+    }
+
+    .badge-gold {
+      background: #364B3E;
+      color: #EBD399;
+      border: 1px solid #736338;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Day Tabs */
+    .day-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .day-tab {
+      flex: 1;
+      min-width: 100px;
+      padding: 12px 14px;
+      background: #EDE8D8;
+      border: 1px solid var(--border-muted);
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-dark);
+      transition: all 0.2s;
+    }
+
+    .day-tab:hover {
+      background: #E3DDC9;
+    }
+
+    .day-tab.active {
+      background: var(--primary-accent);
+      color: #FFF;
+      border-color: var(--primary-accent);
+      box-shadow: 0 2px 6px rgba(45,106,79,0.25);
+    }
+
+    /* Card Panels */
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border-muted);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .panel-title {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      color: var(--primary-dark);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Controls Grid */
+    .selector-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    select {
+      flex: 1;
+      min-width: 240px;
+      padding: 10px 14px;
+      border: 1px solid var(--border-muted);
+      border-radius: 8px;
+      background: #FFF;
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+
+    button {
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--primary-accent);
+      color: #FFF;
+    }
+    .btn-primary:hover { background: #23543E; }
+
+    .btn-auto {
+      background: var(--accent-gold);
+      color: #FFF;
+    }
+    .btn-auto:hover { background: #AA7B1B; }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-muted);
+      color: var(--text-dark);
+    }
+    .btn-outline:hover { background: #F3EFE4; }
+
+    .btn-danger {
+      background: var(--status-red);
+      color: #FFF;
+    }
+
+    /* Absent Chips */
+    .chips-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .chip {
+      background: #F4EFE2;
+      border: 1px solid var(--border-muted);
+      padding: 6px 12px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .chip-count {
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .chip-count.complete { background: var(--status-green-bg); color: var(--status-green); }
+    .chip-count.pending { background: var(--status-red-bg); color: var(--status-red); }
+
+    .chip-remove {
+      cursor: pointer;
+      color: #888;
+      font-weight: bold;
+      margin-left: 4px;
+    }
+    .chip-remove:hover { color: var(--status-red); }
+
+    /* Teacher Schedule Cards */
+    .teacher-card {
+      border: 1px solid var(--border-muted);
+      border-radius: 10px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      background: #FFF;
+    }
+
+    .teacher-card-header {
+      background: #F5EFE0;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-muted);
+    }
+
+    .teacher-card-header h3 {
+      font-family: var(--font-serif);
+      font-size: 17px;
+      color: var(--primary-dark);
+    }
+
+    .periods-list {
+      padding: 12px 18px;
+    }
+
+    .period-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px dashed var(--border-muted);
+      gap: 12px;
+    }
+    .period-item:last-child { border-bottom: none; }
+
+    .period-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .period-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--primary-dark);
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .period-time {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-muted);
+      min-width: 140px;
+    }
+
+    .period-details {
+      flex: 1;
+    }
+
+    .period-course {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+
+    .period-subj {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .badge-double {
+      background: #FFF3CD;
+      color: #856404;
+      border: 1px solid #FFEEBA;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+
+    .recess-banner {
+      background: #FFF8E7;
+      border: 1px dashed var(--accent-gold);
+      border-radius: 6px;
+      padding: 8px 14px;
+      margin: 8px 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #8D630A;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Status Pills in list */
+    .slot-pill {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid transparent;
+    }
+
+    .slot-pill.free {
+      background: #EDF2EE;
+      color: #4A6353;
+      border-color: #D3E0D6;
+      cursor: default;
+    }
+
+    .slot-pill.covered {
+      background: var(--status-green-bg);
+      color: var(--status-green);
+      border-color: var(--status-green-border);
+    }
+
+    .slot-pill.uncovered {
+      background: var(--status-red-bg);
+      color: var(--status-red);
+      border-color: var(--status-red-border);
+    }
+
+    /* Modal / Candidates List */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 16px;
+    }
+
+    .modal-box {
+      background: #FFF;
+      border-radius: 12px;
+      max-width: 580px;
+      width: 100%;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    .modal-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #FAF7EE;
+    }
+
+    .modal-header h3 {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      color: var(--primary-dark);
+    }
+
+    .modal-body {
+      padding: 18px 22px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .candidate-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border: 1px solid var(--border-muted);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: #FFF;
+    }
+    .candidate-card.used-today {
+      background: #FAF8F4;
+      opacity: 0.85;
+    }
+
+    .candidate-name {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+
+    .avail-bar-wrap {
+      width: 120px;
+      height: 6px;
+      background: #E5E0D0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 4px 0;
+    }
+
+    .avail-bar-fill {
+      height: 100%;
+      background: var(--primary-accent);
+    }
+
+    .avail-text {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .btn-choose {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+      background: var(--primary-accent);
+      color: #FFF;
+    }
+
+    .btn-remove-sub {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+      background: var(--status-red);
+      color: #FFF;
+    }
+
+    /* Actions Bar */
+    .actions-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border-muted);
+      padding-top: 20px;
+    }
+
+    .export-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* Pedagogic affinity & cycle styles */
+    .policy-box {
+      background: #FAF8F2;
+      border: 1px solid var(--border-muted);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .policy-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge-cycle {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      background: #EFECE3;
+      color: #4A5568;
+      border: 1px solid #DCD7CA;
+      margin-left: 6px;
+    }
+    .badge-affinity {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      background: #FAF4E4;
+      color: #8D630A;
+      border: 1px solid #E5D5AA;
+      margin-left: 6px;
+    }
+    .modal-filters {
+      padding: 12px 20px;
+      background: #FAF9F6;
+      border-bottom: 1px solid var(--border-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      min-width: 80px;
+    }
+    .filter-pill {
+      padding: 3px 10px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #FFF;
+      border: 1px solid var(--border-muted);
+      color: var(--text-dark);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-pill:hover { background: #F3EFE4; }
+    .filter-pill.active {
+      background: var(--primary-accent);
+      color: #FFF;
+      border-color: var(--primary-accent);
+    }
+    .course-affinity-box {
+      background: #F4F8F5;
+      border: 1px solid #C4DFC9;
+      border-radius: 6px;
+      padding: 9px 12px;
+      font-size: 12px;
+      color: #2D503C;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .candidate-profile-tag {
+      font-size: 11px;
+      color: #6B7280;
+      margin-top: 3px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>COLEGIO SANTO DOMINGO</h1>
+        <div class="subtitle">Sistema Autónomo de Gestión de Sustituciones • Nivel Secundario</div>
+      </div>
+      <div class="badge-gold">✓ MODO OFFLINE AUTOCONTENIDO</div>
+    </header>
+
+    <!-- Selector de Día -->
+    <div class="day-selector" id="dayTabs"></div>
+
+    <!-- Panel de Ausentes -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>Docentes Ausentes</span>
+        <div id="coverageHeaderBadge"></div>
+      </div>
+
+      <div class="selector-row">
+        <select id="teacherSelect">
+          <option value="">-- Seleccionar Docente Ausente --</option>
+        </select>
+        <button class="btn-primary" id="btnAddAbsent">+ Agregar Ausente</button>
+      </div>
+
+      <!-- Criterio de Auto-Asignación y Afinidad Pedagógica -->
+      <div class="policy-box" id="policyContainer" style="display: none;">
+        <div class="policy-title-wrap">
+          <span style="font-weight: bold; font-size: 12px; color: var(--primary-dark);">⚡ Criterio de Auto-Asignación:</span>
+          <span style="font-size: 11px; color: var(--text-muted);">(Prioriza docentes que ya conocen a los estudiantes)</span>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+          <select id="autoAssignPolicySelect" style="font-size: 12px; padding: 6px 10px; min-width: 260px;">
+            <option value="smart_affinity">★ Afinidad Pedagógica (Mismo Grado y Ciclo)</option>
+            <option value="only_1er_ciclo">Filtrar: Solo 1.er Ciclo (1.º, 2.º, 3.º)</option>
+            <option value="only_2do_ciclo">Filtrar: Solo 2.do Ciclo (4.º, 5.º, 6.º)</option>
+            <option value="balanced_all">Sin preferencia de ciclo (Solo horas libres)</option>
+          </select>
+          <button class="btn-auto" id="btnAutoAssign">⚡ Auto-Asignar Todo</button>
+        </div>
+      </div>
+
+      <div class="chips-container" id="absentChips"></div>
+    </div>
+
+    <!-- Lista de Horarios de Ausentes -->
+    <div id="absentSchedulesContainer"></div>
+
+    <!-- Panel Individual por Sustituto -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>Envío Individual por Sustituto</span>
+      </div>
+      <div class="selector-row">
+        <select id="substituteSelect">
+          <option value="">-- Seleccionar Sustituto con Asignaciones --</option>
+        </select>
+        <button class="btn-outline" id="btnExportIndividualImage">📷 Exportar Notificación Docente (.png)</button>
+      </div>
+      <div id="individualPreview"></div>
+    </div>
+
+    <!-- Barra de Exportación General -->
+    <div class="panel actions-bar">
+      <div>
+        <strong>Plan de Sustitución del Día</strong>
+        <div style="font-size: 12px; color: var(--text-muted);" id="planSummaryText"></div>
+      </div>
+      <div class="export-btns">
+        <button class="btn-primary" id="btnExportPlanImage">📷 Descargar Plan en Imagen PNG (Canvas 2D)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Candidatos con Filtros de Afinidad Pedagógica -->
+  <div id="candidateModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h3 id="modalTitle">Seleccionar Sustituto</h3>
+          <div style="font-size: 12px; color: var(--text-muted);" id="modalSubtitle"></div>
+        </div>
+        <button class="btn-outline" id="btnCloseModal" style="padding: 4px 10px;">✕</button>
+      </div>
+      <div class="modal-filters" id="modalFilters"></div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    // Embedded Data Constants
+    const SCHEDULE = {
+  "ALEJANDRO FRIAS": {
+    "Lunes": {
+      "1": null,
+      "2": {
+        "course": "5to B MyT",
+        "subject": "Ciencias Naturales"
+      },
+      "3": {
+        "course": "5toA MyT",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "5toA MyT",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "6toA MyT",
+        "subject": "Ciencias Naturales"
+      },
+      "6": {
+        "course": "6toB MyT",
+        "subject": "Ciencias Naturales"
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "6toA MyT",
+        "subject": "Ciencias Naturales"
+      },
+      "2": {
+        "course": "6toA HyLM",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "6toA HyLM",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "5toB HyLM",
+        "subject": "Ciencias Naturales"
+      },
+      "5": null,
+      "6": {
+        "course": "6toB MyT",
+        "subject": "Ciencias Naturales"
+      }
+    },
+    "Miércoles": {
+      "1": null,
+      "2": {
+        "course": "5toB HyLM",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "5toB HyLM",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "5to B MyT",
+        "subject": "Ciencias Naturales"
+      },
+      "5": {
+        "course": "6toA MyT",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "6toA MyT",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "5toA MyT",
+        "subject": "Ciencias Naturales"
+      },
+      "2": {
+        "course": "6toA HyLM",
+        "subject": "Ciencias Naturales"
+      },
+      "3": {
+        "course": "6toB MyT",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "6toB MyT",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "5": null,
+      "6": {
+        "course": "5toB HyLM",
+        "subject": "Ciencias Naturales"
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "5to B MyT",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "5to B MyT",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "3": null,
+      "4": null,
+      "5": {
+        "course": "6toA HyLM",
+        "subject": "Ciencias Naturales"
+      },
+      "6": {
+        "course": "5toA MyT",
+        "subject": "Ciencias Naturales"
+      }
+    }
+  },
+  "CATALINA DE LOS SANTOS": {
+    "Lunes": {
+      "1": null,
+      "2": {
+        "course": "4toA CyT",
+        "subject": "Lengua Española"
+      },
+      "3": null,
+      "4": {
+        "course": "5toA HyLM",
+        "subject": "Apreciación y Producción Literarias"
+      },
+      "5": {
+        "course": "4toA HyLM",
+        "subject": "Lengua Española"
+      },
+      "6": {
+        "course": "4toA MyT",
+        "subject": "Lengua Española"
+      }
+    },
+    "Martes": {
+      "1": null,
+      "2": null,
+      "3": {
+        "course": "5toB HyLM",
+        "subject": "Apreciación y Producción Literarias"
+      },
+      "4": {
+        "course": "4toA HyLM",
+        "subject": "Lengua Española"
+      },
+      "5": {
+        "course": "6toA HyLM",
+        "subject": "Ana. y Prod. de Textos Periodísticos y Publicitarios"
+      },
+      "6": {
+        "course": "4toA MyT",
+        "subject": "Lengua Española"
+      }
+    },
+    "Miércoles": {
+      "1": null,
+      "2": {
+        "course": "4toA CyT",
+        "subject": "Lengua Española"
+      },
+      "3": {
+        "course": "5toA HyLM",
+        "subject": "Apreciación y Producción Literarias"
+      },
+      "4": {
+        "course": "6toA HyLM",
+        "subject": "Ana. y Prod. de Textos Periodísticos y Publicitarios"
+      },
+      "5": {
+        "course": "5toB HyLM",
+        "subject": "Apreciación y Producción Literarias"
+      },
+      "6": {
+        "course": "4toA HyLM",
+        "subject": "Lengua Española"
+      }
+    },
+    "Jueves": {
+      "1": null,
+      "2": {
+        "course": "4toA CyT",
+        "subject": "Lengua Española"
+      },
+      "3": null,
+      "4": null,
+      "5": {
+        "course": "4toA MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "4toA MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      }
+    },
+    "Viernes": {
+      "1": null,
+      "2": {
+        "course": "4toA CyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "4toA CyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "4toA MyT",
+        "subject": "Lengua Española"
+      },
+      "5": {
+        "course": "4toA HyLM",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "4toA HyLM",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      }
+    }
+  },
+  "DAHIANA CUELLO": {
+    "Lunes": {
+      "1": {
+        "course": "2doA",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "2doA",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "2doB",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "2doB",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "2doC",
+        "subject": "Matemática"
+      },
+      "6": {
+        "course": "5toA MyT",
+        "subject": "Estadística, Probabilidad y Tecnología"
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "2doB",
+        "subject": "Matemática"
+      },
+      "2": null,
+      "3": {
+        "course": "2doA",
+        "subject": "Matemática"
+      },
+      "4": {
+        "course": "5to B MyT",
+        "subject": "Estadística, Probabilidad y Tecnología"
+      },
+      "5": {
+        "course": "2doC",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "2doC",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "5to B MyT",
+        "subject": "Estadística, Probabilidad y Tecnología"
+      },
+      "2": null,
+      "3": {
+        "course": "5toA MyT",
+        "subject": "Estadística, Probabilidad y Tecnología"
+      },
+      "4": null,
+      "5": {
+        "course": "2doB",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "2doB",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "5to B MyT",
+        "subject": "Estadística, Probabilidad y Tecnología"
+      },
+      "2": {
+        "course": "5toA MyT",
+        "subject": "Estadística, Probabilidad y Tecnología"
+      },
+      "3": {
+        "course": "2doC",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "2doC",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "2doA",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "2doA",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "2doB",
+        "subject": "Matemática"
+      },
+      "2": null,
+      "3": {
+        "course": "5to B MyT",
+        "subject": "Estadística, Probabilidad y Tecnología"
+      },
+      "4": {
+        "course": "5toA MyT",
+        "subject": "Estadística, Probabilidad y Tecnología"
+      },
+      "5": {
+        "course": "2doC",
+        "subject": "Matemática"
+      },
+      "6": {
+        "course": "2doA",
+        "subject": "Matemática"
+      }
+    }
+  },
+  "ELIZABETH CIRINEO": {
+    "Lunes": {
+      "1": {
+        "course": "3roB",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "3roB",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "6toA MyT",
+        "subject": "Trigonometría, Cálculo Diferencial y Tecnología",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "6toA MyT",
+        "subject": "Trigonometría, Cálculo Diferencial y Tecnología",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "3roA",
+        "subject": "Matemática"
+      },
+      "6": {
+        "course": "3roC",
+        "subject": "Matemática"
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "6toB MyT",
+        "subject": "Trigonometría, Cálculo Diferencial y Tecnología",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "6toB MyT",
+        "subject": "Trigonometría, Cálculo Diferencial y Tecnología",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "3roC",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "3roC",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "3roA",
+        "subject": "Matemática"
+      },
+      "6": {
+        "course": "3roB",
+        "subject": "Matemática"
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "3roA",
+        "subject": "Matemática"
+      },
+      "2": {
+        "course": "6toA MyT",
+        "subject": "Trigonometría, Cálculo Diferencial y Tecnología",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "6toA MyT",
+        "subject": "Trigonometría, Cálculo Diferencial y Tecnología",
+        "isDoubleBlock": true
+      },
+      "4": null,
+      "5": {
+        "course": "3roC",
+        "subject": "Matemática"
+      },
+      "6": {
+        "course": "3roB",
+        "subject": "Matemática"
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "3roC",
+        "subject": "Matemática"
+      },
+      "2": {
+        "course": "3roA",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "3roA",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "3roB",
+        "subject": "Matemática"
+      },
+      "5": null,
+      "6": null
+    },
+    "Viernes": {
+      "1": {
+        "course": "3roA",
+        "subject": "Matemática"
+      },
+      "2": {
+        "course": "3roC",
+        "subject": "Matemática"
+      },
+      "3": {
+        "course": "6toB MyT",
+        "subject": "Trigonometría, Cálculo Diferencial y Tecnología",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "6toB MyT",
+        "subject": "Trigonometría, Cálculo Diferencial y Tecnología",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "3roB",
+        "subject": "Matemática"
+      },
+      "6": null
+    }
+  },
+  "EMELY LEONARDO": {
+    "Lunes": {
+      "1": {
+        "course": "1roC",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "1roC",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "1roA",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "1roA",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "5": null,
+      "6": {
+        "course": "1roB",
+        "subject": "Matemática"
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "1ro D",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "1ro D",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "3": null,
+      "4": null,
+      "5": {
+        "course": "1roC",
+        "subject": "Matemática"
+      },
+      "6": {
+        "course": "1roA",
+        "subject": "Matemática"
+      }
+    },
+    "Miércoles": {
+      "1": null,
+      "2": {
+        "course": "1ro D",
+        "subject": "Matemática"
+      },
+      "3": {
+        "course": "1roB",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "1roB",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "1roA",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "1roA",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "1roB",
+        "subject": "Matemática"
+      },
+      "2": {
+        "course": "1roC",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "1roC",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "1ro D",
+        "subject": "Matemática"
+      },
+      "5": null,
+      "6": {
+        "course": "1roA",
+        "subject": "Matemática"
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "1roC",
+        "subject": "Matemática"
+      },
+      "2": {
+        "course": "1ro D",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "1ro D",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": null,
+      "5": {
+        "course": "1roB",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "1roB",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      }
+    }
+  },
+  "HECTOR PINALES": {
+    "Lunes": {
+      "1": {
+        "course": "1roA",
+        "subject": "Lengua Española"
+      },
+      "2": {
+        "course": "1roB",
+        "subject": "Lengua Española"
+      },
+      "3": {
+        "course": "1roC",
+        "subject": "Lengua Española"
+      },
+      "4": null,
+      "5": {
+        "course": "1ro D",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "1ro D",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "1roB",
+        "subject": "Lengua Española"
+      },
+      "2": {
+        "course": "1roC",
+        "subject": "Lengua Española"
+      },
+      "3": null,
+      "4": null,
+      "5": {
+        "course": "1roA",
+        "subject": "Lengua Española"
+      },
+      "6": {
+        "course": "1ro D",
+        "subject": "Lengua Española"
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "1roA",
+        "subject": "Lengua Española"
+      },
+      "2": {
+        "course": "1roC",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "1roC",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "4": null,
+      "5": {
+        "course": "1roB",
+        "subject": "Lengua Española"
+      },
+      "6": {
+        "course": "1ro D",
+        "subject": "Lengua Española"
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "1roC",
+        "subject": "Lengua Española"
+      },
+      "2": {
+        "course": "1roB",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "1roB",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "4": null,
+      "5": {
+        "course": "1roA",
+        "subject": "Lengua Española"
+      },
+      "6": {
+        "course": "1ro D",
+        "subject": "Lengua Española"
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "1roA",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "1roA",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "1roB",
+        "subject": "Lengua Española"
+      },
+      "4": null,
+      "5": {
+        "course": "1ro D",
+        "subject": "Lengua Española"
+      },
+      "6": {
+        "course": "1roC",
+        "subject": "Lengua Española"
+      }
+    }
+  },
+  "HILLARY CANELA": {
+    "Lunes": {
+      "1": {
+        "course": "4toA HyLM",
+        "subject": "Ciencias Sociales"
+      },
+      "2": {
+        "course": "3roC",
+        "subject": "Ciencias Sociales"
+      },
+      "3": {
+        "course": "4toA CyT",
+        "subject": "Ciencias Sociales"
+      },
+      "4": {
+        "course": "3roA",
+        "subject": "Ciencias Sociales"
+      },
+      "5": {
+        "course": "4toA MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "6": null
+    },
+    "Martes": {
+      "1": {
+        "course": "4toA MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "2": null,
+      "3": {
+        "course": "4toA HyLM",
+        "subject": "Ciencias Sociales"
+      },
+      "4": {
+        "course": "3roA",
+        "subject": "Ciencias Sociales"
+      },
+      "5": {
+        "course": "3roB",
+        "subject": "Ciencias Sociales"
+      },
+      "6": null
+    },
+    "Miércoles": {
+      "1": {
+        "course": "4toA CyT",
+        "subject": "Ciencias Sociales"
+      },
+      "2": {
+        "course": "3roC",
+        "subject": "Ciencias Sociales"
+      },
+      "3": {
+        "course": "3roA",
+        "subject": "Ciencias Sociales"
+      },
+      "4": {
+        "course": "4toA HyLM",
+        "subject": "Ciencias Sociales"
+      },
+      "5": {
+        "course": "3roB",
+        "subject": "Ciencias Sociales"
+      },
+      "6": {
+        "course": "4toA MyT",
+        "subject": "Ciencias Sociales"
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "4toA CyT",
+        "subject": "Ciencias Sociales"
+      },
+      "2": {
+        "course": "4toA MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "3": null,
+      "4": {
+        "course": "3roC",
+        "subject": "Ciencias Sociales"
+      },
+      "5": {
+        "course": "3roB",
+        "subject": "Ciencias Sociales"
+      },
+      "6": {
+        "course": "3roA",
+        "subject": "Ciencias Sociales"
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "4toA CyT",
+        "subject": "Ciencias Sociales"
+      },
+      "2": {
+        "course": "4toA HyLM",
+        "subject": "Ciencias Sociales"
+      },
+      "3": {
+        "course": "3roB",
+        "subject": "Ciencias Sociales"
+      },
+      "4": {
+        "course": "3roC",
+        "subject": "Ciencias Sociales"
+      },
+      "5": null,
+      "6": null
+    }
+  },
+  "ISABELA GONZALEZ": {
+    "Lunes": {
+      "1": null,
+      "2": null,
+      "3": null,
+      "4": null,
+      "5": null,
+      "6": null
+    },
+    "Martes": {
+      "1": {
+        "course": "3roA/3roB/3roC",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "3roA/3roB/3roC",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "5toA HyLM/5toA MyT/5to B MyT/5toB HyLM",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "5toA HyLM/5toA MyT/5to B MyT/5toB HyLM",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "6toA HyLM/6toA MyT/6toB MyT",
+        "subject": "Inglés"
+      },
+      "2": null,
+      "3": {
+        "course": "2doC/2doB/2doA",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "2doC/2doB/2doA",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "4toA HyLM/4toA MyT/4toA CyT",
+        "subject": "Inglés"
+      },
+      "6": {
+        "course": "5toA MyT/5toA HyLM/5to B MyT/5toB HyLM",
+        "subject": "Inglés"
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "2doC/2doB/2doA",
+        "subject": "Inglés"
+      },
+      "2": null,
+      "3": {
+        "course": "4toA HyLM/4toA MyT/4toA CyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "4toA HyLM/4toA MyT/4toA CyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "6toA HyLM/6toA MyT/6toB MyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "6toA HyLM/6toA MyT/6toB MyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      }
+    },
+    "Viernes": {
+      "1": null,
+      "2": null,
+      "3": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": null,
+      "6": {
+        "course": "3roA/3roB/3roC",
+        "subject": "Inglés"
+      }
+    }
+  },
+  "JENNIFER CASTRO": {
+    "Lunes": {
+      "1": {
+        "course": "4toA MyT",
+        "subject": "Matemática"
+      },
+      "2": null,
+      "3": {
+        "course": "4toA HyLM",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "4toA HyLM",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "5toB HyLM",
+        "subject": "Matemática"
+      },
+      "6": {
+        "course": "5toA HyLM",
+        "subject": "Matemática"
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "4toA HyLM",
+        "subject": "Matemática"
+      },
+      "2": {
+        "course": "5toB HyLM",
+        "subject": "Matemática"
+      },
+      "3": {
+        "course": "5toA HyLM",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "5toA HyLM",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "4toA CyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "4toA CyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "4toA MyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "4toA MyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "4toA CyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "4toA CyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "5": null,
+      "6": null
+    },
+    "Jueves": {
+      "1": {
+        "course": "5toB HyLM",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "5toB HyLM",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "3": null,
+      "4": {
+        "course": "5toA HyLM",
+        "subject": "Matemática"
+      },
+      "5": {
+        "course": "4toA HyLM",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "4toA HyLM",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "5toA HyLM",
+        "subject": "Matemática"
+      },
+      "2": {
+        "course": "4toA MyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "4toA MyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "4toA CyT",
+        "subject": "Matemática"
+      },
+      "5": null,
+      "6": {
+        "course": "5toB HyLM",
+        "subject": "Matemática"
+      }
+    }
+  },
+  "JINNE ISABEL": {
+    "Lunes": {
+      "1": null,
+      "2": null,
+      "3": {
+        "course": "2doC",
+        "subject": "Lengua Española"
+      },
+      "4": {
+        "course": "2doA",
+        "subject": "Lengua Española"
+      },
+      "5": {
+        "course": "2doB",
+        "subject": "Lengua Española"
+      },
+      "6": {
+        "course": "3roA",
+        "subject": "Lengua Española"
+      }
+    },
+    "Martes": {
+      "1": null,
+      "2": {
+        "course": "2doC",
+        "subject": "Lengua Española"
+      },
+      "3": null,
+      "4": {
+        "course": "2doA",
+        "subject": "Lengua Española"
+      },
+      "5": {
+        "course": "2doB",
+        "subject": "Lengua Española"
+      },
+      "6": {
+        "course": "3roA",
+        "subject": "Lengua Española"
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "2doB",
+        "subject": "Lengua Española"
+      },
+      "2": {
+        "course": "2doA",
+        "subject": "Lengua Española"
+      },
+      "3": null,
+      "4": {
+        "course": "3roA",
+        "subject": "Lengua Española"
+      },
+      "5": {
+        "course": "2doC",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "2doC",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      }
+    },
+    "Jueves": {
+      "1": null,
+      "2": {
+        "course": "2doB",
+        "subject": "Lengua Española"
+      },
+      "3": {
+        "course": "2doA",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "2doA",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "3roA",
+        "subject": "Lengua Española"
+      },
+      "6": {
+        "course": "2doC",
+        "subject": "Lengua Española"
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "2doC",
+        "subject": "Lengua Española"
+      },
+      "2": {
+        "course": "2doA",
+        "subject": "Lengua Española"
+      },
+      "3": {
+        "course": "3roA",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "3roA",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "2doB",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "2doB",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      }
+    }
+  },
+  "JUAN CARLOS SANDOVAL": {
+    "Lunes": {
+      "1": {
+        "course": "5toB HyLM",
+        "subject": "Apreciación de la Literatura Anglófona",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "5toB HyLM",
+        "subject": "Apreciación de la Literatura Anglófona",
+        "isDoubleBlock": true
+      },
+      "3": null,
+      "4": null,
+      "5": null,
+      "6": {
+        "course": "4toA HyLM",
+        "subject": "Manejo de la Información en Inglés"
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "3roA/3roB/3roC",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "3roA/3roB/3roC",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "5toA HyLM/5toA MyT/5to B MyT/5toB HyLM",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "5toA HyLM/5toA MyT/5to B MyT/5toB HyLM",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "6toA HyLM/6toA MyT/6toB MyT",
+        "subject": "Inglés"
+      },
+      "2": {
+        "course": "5toA HyLM",
+        "subject": "Apreciación de la Literatura Anglófona"
+      },
+      "3": {
+        "course": "2doC/2doB/2doA",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "2doC/2doB/2doA",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "4toA HyLM/4toA MyT/4toA CyT",
+        "subject": "Inglés"
+      },
+      "6": {
+        "course": "5toA MyT/5toA HyLM/5to B MyT/5toB HyLM",
+        "subject": "Inglés"
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "2doC/2doB/2doA",
+        "subject": "Inglés"
+      },
+      "2": {
+        "course": "5toA HyLM",
+        "subject": "Apreciación de la Literatura Anglófona"
+      },
+      "3": {
+        "course": "4toA HyLM/4toA MyT/4toA CyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "4toA HyLM/4toA MyT/4toA CyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "6toA HyLM/6toA MyT/6toB MyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "6toA HyLM/6toA MyT/6toB MyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "4toA HyLM",
+        "subject": "Manejo de la Información en Inglés"
+      },
+      "2": null,
+      "3": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "5toB HyLM",
+        "subject": "Apreciación de la Literatura Anglófona"
+      },
+      "6": {
+        "course": "3roA/3roB/3roC",
+        "subject": "Inglés"
+      }
+    }
+  },
+  "JUANA PASCUAL": {
+    "Lunes": {
+      "1": {
+        "course": "3roC",
+        "subject": "Lengua Española"
+      },
+      "2": {
+        "course": "4toA HyLM",
+        "subject": "Apreciación y Producción Literarias"
+      },
+      "3": {
+        "course": "5toA HyLM",
+        "subject": "Lengua Española"
+      },
+      "4": {
+        "course": "5toB HyLM",
+        "subject": "Lengua Española"
+      },
+      "5": {
+        "course": "3roB",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "3roB",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "5toA HyLM",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "5toA HyLM",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "3roB",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "3roB",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "5": null,
+      "6": {
+        "course": "3roC",
+        "subject": "Lengua Española"
+      }
+    },
+    "Miércoles": {
+      "1": null,
+      "2": {
+        "course": "3roB",
+        "subject": "Lengua Española"
+      },
+      "3": {
+        "course": "3roC",
+        "subject": "Lengua Española"
+      },
+      "4": null,
+      "5": null,
+      "6": null
+    },
+    "Jueves": {
+      "1": {
+        "course": "4toA HyLM",
+        "subject": "Apreciación y Producción Literarias"
+      },
+      "2": {
+        "course": "3roB",
+        "subject": "Lengua Española"
+      },
+      "3": {
+        "course": "5toB HyLM",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "5toB HyLM",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "3roC",
+        "subject": "Lengua Española"
+      },
+      "6": null
+    },
+    "Viernes": {
+      "1": {
+        "course": "3roC",
+        "subject": "Lengua Española"
+      },
+      "2": {
+        "course": "5toB HyLM",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "5toB HyLM",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "3roB",
+        "subject": "Lengua Española"
+      },
+      "5": {
+        "course": "5toA HyLM",
+        "subject": "Lengua Española"
+      },
+      "6": null
+    }
+  },
+  "JUANA SEGURA": {
+    "Lunes": {
+      "1": {
+        "course": "1roB",
+        "subject": "Ciencias Naturales"
+      },
+      "2": {
+        "course": "1ro D",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "1ro D",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "3roB",
+        "subject": "FIHR"
+      },
+      "5": {
+        "course": "1roA",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "1roA",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "1roC",
+        "subject": "Ciencias Naturales"
+      },
+      "2": {
+        "course": "1roA",
+        "subject": "Ciencias Naturales"
+      },
+      "3": null,
+      "4": null,
+      "5": null,
+      "6": {
+        "course": "1roB",
+        "subject": "FIHR"
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "1roB",
+        "subject": "Ciencias Naturales"
+      },
+      "2": {
+        "course": "3roA",
+        "subject": "FIHR"
+      },
+      "3": {
+        "course": "1ro D",
+        "subject": "Ciencias Naturales"
+      },
+      "4": {
+        "course": "3roC",
+        "subject": "FIHR"
+      },
+      "5": {
+        "course": "1roC",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "1roC",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "1ro D",
+        "subject": "Ciencias Naturales"
+      },
+      "2": {
+        "course": "2doA",
+        "subject": "FIHR"
+      },
+      "3": {
+        "course": "1roA",
+        "subject": "FIHR"
+      },
+      "4": {
+        "course": "1roA",
+        "subject": "Ciencias Naturales"
+      },
+      "5": {
+        "course": "1ro D",
+        "subject": "FIHR"
+      },
+      "6": {
+        "course": "1roC",
+        "subject": "FIHR"
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "1roB",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "1roB",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "2doB",
+        "subject": "FIHR"
+      },
+      "4": null,
+      "5": {
+        "course": "1roC",
+        "subject": "Ciencias Naturales"
+      },
+      "6": {
+        "course": "2doC",
+        "subject": "FIHR"
+      }
+    }
+  },
+  "MAITTE BRETON": {
+    "Lunes": {
+      "1": {
+        "course": "5to B MyT",
+        "subject": "Matemática"
+      },
+      "2": {
+        "course": "5toA MyT",
+        "subject": "Matemática"
+      },
+      "3": null,
+      "4": {
+        "course": "6toA HyLM",
+        "subject": "Matemática"
+      },
+      "5": {
+        "course": "6toB MyT",
+        "subject": "Matemática"
+      },
+      "6": {
+        "course": "6toA MyT",
+        "subject": "Matemática"
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "6toA HyLM",
+        "subject": "Matemática"
+      },
+      "2": null,
+      "3": {
+        "course": "5toA MyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "5toA MyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "5": null,
+      "6": {
+        "course": "6toA MyT",
+        "subject": "Matemática"
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "5toA MyT",
+        "subject": "Matemática"
+      },
+      "2": {
+        "course": "5to B MyT",
+        "subject": "Matemática"
+      },
+      "3": {
+        "course": "6toB MyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "6toB MyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "6toA HyLM",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "6toA HyLM",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "6toB MyT",
+        "subject": "Matemática"
+      },
+      "2": {
+        "course": "6toA MyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "6toA MyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "5to B MyT",
+        "subject": "Matemática"
+      },
+      "5": null,
+      "6": null
+    },
+    "Viernes": {
+      "1": {
+        "course": "5toA MyT",
+        "subject": "Matemática"
+      },
+      "2": {
+        "course": "6toB MyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "6toB MyT",
+        "subject": "Matemática",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "6toA HyLM",
+        "subject": "Matemática"
+      },
+      "5": {
+        "course": "5to B MyT",
+        "subject": "Matemática"
+      },
+      "6": null
+    }
+  },
+  "MARIA ABREU": {
+    "Lunes": {
+      "1": {
+        "course": "5toA HyLM",
+        "subject": "Educación Artística"
+      },
+      "2": {
+        "course": "4toA MyT",
+        "subject": "Educación Artística"
+      },
+      "3": null,
+      "4": {
+        "course": "4toA CyT",
+        "subject": "Educación Artística"
+      },
+      "5": {
+        "course": "5to B MyT",
+        "subject": "Educación Artística"
+      },
+      "6": {
+        "course": "5toB HyLM",
+        "subject": "Educación Artística"
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "4toA CyT",
+        "subject": "Educación Artística"
+      },
+      "2": {
+        "course": "5toA MyT",
+        "subject": "Educación Artística"
+      },
+      "3": {
+        "course": "4toA MyT",
+        "subject": "Educación Artística"
+      },
+      "4": {
+        "course": "6toB MyT",
+        "subject": "Educación Artística"
+      },
+      "5": {
+        "course": "6toA MyT",
+        "subject": "Educación Artística"
+      },
+      "6": null
+    },
+    "Miércoles": {
+      "1": {
+        "course": "4toA HyLM",
+        "subject": "Educación Artística"
+      },
+      "2": null,
+      "3": null,
+      "4": {
+        "course": "5toB HyLM",
+        "subject": "Educación Artística"
+      },
+      "5": null,
+      "6": null
+    },
+    "Jueves": {
+      "1": {
+        "course": "6toA HyLM",
+        "subject": "Educación Artística"
+      },
+      "2": null,
+      "3": {
+        "course": "5toA MyT",
+        "subject": "Educación Artística"
+      },
+      "4": null,
+      "5": {
+        "course": "5to B MyT",
+        "subject": "Educación Artística"
+      },
+      "6": {
+        "course": "5toA HyLM",
+        "subject": "Educación Artística"
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "6toB MyT",
+        "subject": "Educación Artística"
+      },
+      "2": null,
+      "3": {
+        "course": "4toA HyLM",
+        "subject": "Educación Artística"
+      },
+      "4": {
+        "course": "6toA MyT",
+        "subject": "Educación Artística"
+      },
+      "5": null,
+      "6": {
+        "course": "6toA HyLM",
+        "subject": "Educación Artística"
+      }
+    }
+  },
+  "MARINO SALDAÑA": {
+    "Lunes": {
+      "1": null,
+      "2": null,
+      "3": null,
+      "4": null,
+      "5": null,
+      "6": null
+    },
+    "Martes": {
+      "1": {
+        "course": "3roA/3roB/3roC",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "3roA/3roB/3roC",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "5toA HyLM/5toA MyT/5to B MyT/5toB HyLM",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "5toA HyLM/5toA MyT/5to B MyT/5toB HyLM",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "6toA HyLM/6toA MyT/6toB MyT",
+        "subject": "Inglés"
+      },
+      "2": {
+        "course": "5toA MyT",
+        "subject": "Francés"
+      },
+      "3": {
+        "course": "2doC/2doB/2doA",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "2doC/2doB/2doA",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "4toA HyLM/4toA MyT/4toA CyT",
+        "subject": "Inglés"
+      },
+      "6": {
+        "course": "5toA MyT/5toA HyLM/5to B MyT/5toB HyLM",
+        "subject": "Inglés"
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "2doC/2doB/2doA",
+        "subject": "Inglés"
+      },
+      "2": {
+        "course": "5to B MyT",
+        "subject": "Francés"
+      },
+      "3": {
+        "course": "4toA HyLM/4toA MyT/4toA CyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "4toA HyLM/4toA MyT/4toA CyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "6toA HyLM/6toA MyT/6toB MyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "6toA HyLM/6toA MyT/6toB MyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "5toB HyLM",
+        "subject": "Francés"
+      },
+      "2": {
+        "course": "6toA MyT",
+        "subject": "Francés"
+      },
+      "3": {
+        "course": "6toA HyLM",
+        "subject": "Francés"
+      },
+      "4": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés"
+      },
+      "5": {
+        "course": "6toB MyT",
+        "subject": "Francés"
+      },
+      "6": {
+        "course": "3roA/3roB/3roC",
+        "subject": "Inglés"
+      }
+    }
+  },
+  "MARITZA CIPRIAN": {
+    "Lunes": {
+      "1": {
+        "course": "6toB MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "6toB MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "5to B MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "5to B MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "6toA HyLM",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "6toA HyLM",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "5to B MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "5to B MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "6toA MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "6toA MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "6toB MyT",
+        "subject": "Lengua Española"
+      },
+      "6": null
+    },
+    "Miércoles": {
+      "1": null,
+      "2": null,
+      "3": {
+        "course": "5to B MyT",
+        "subject": "Lengua Española"
+      },
+      "4": {
+        "course": "5toA MyT",
+        "subject": "Lengua Española"
+      },
+      "5": {
+        "course": "6toB MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "6toB MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "6toA MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "6toA MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "6toA HyLM",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "6toA HyLM",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "5toA MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "5toA MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "6toA HyLM",
+        "subject": "Lengua Española"
+      },
+      "2": {
+        "course": "5toA MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "5toA MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "4": null,
+      "5": {
+        "course": "6toA MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "6toA MyT",
+        "subject": "Lengua Española",
+        "isDoubleBlock": true
+      }
+    }
+  },
+  "NATALY GOMEZ": {
+    "Lunes": {
+      "1": {
+        "course": "3roA",
+        "subject": "Educación Artística"
+      },
+      "2": {
+        "course": "2doB",
+        "subject": "Educación Artística"
+      },
+      "3": {
+        "course": "3roC",
+        "subject": "Educación Artística"
+      },
+      "4": {
+        "course": "1roC",
+        "subject": "Educación Artística"
+      },
+      "5": {
+        "course": "2doA",
+        "subject": "Educación Artística"
+      },
+      "6": {
+        "course": "2doC",
+        "subject": "Educación Artística"
+      }
+    },
+    "Martes": {
+      "1": null,
+      "2": {
+        "course": "1roB",
+        "subject": "Educación Artística"
+      },
+      "3": null,
+      "4": null,
+      "5": {
+        "course": "1ro D",
+        "subject": "Educación Artística"
+      },
+      "6": {
+        "course": "1roC",
+        "subject": "Educación Artística"
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "3roC",
+        "subject": "Educación Artística"
+      },
+      "2": null,
+      "3": null,
+      "4": null,
+      "5": {
+        "course": "1ro D",
+        "subject": "Educación Artística"
+      },
+      "6": {
+        "course": "3roA",
+        "subject": "Educación Artística"
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "3roB",
+        "subject": "Educación Artística"
+      },
+      "2": {
+        "course": "1roA",
+        "subject": "Educación Artística"
+      },
+      "3": {
+        "course": "2doB",
+        "subject": "Educación Artística"
+      },
+      "4": null,
+      "5": null,
+      "6": {
+        "course": "1roB",
+        "subject": "Educación Artística"
+      }
+    },
+    "Viernes": {
+      "1": null,
+      "2": {
+        "course": "3roB",
+        "subject": "Educación Artística"
+      },
+      "3": {
+        "course": "2doA",
+        "subject": "Educación Artística"
+      },
+      "4": {
+        "course": "2doC",
+        "subject": "Educación Artística"
+      },
+      "5": null,
+      "6": {
+        "course": "1roA",
+        "subject": "Educación Artística"
+      }
+    }
+  },
+  "NELSON ORTEGA": {
+    "Lunes": {
+      "1": {
+        "course": "5toA MyT",
+        "subject": "FIHR"
+      },
+      "2": {
+        "course": "5toA HyLM",
+        "subject": "Ciencias Sociales"
+      },
+      "3": {
+        "course": "6toB MyT",
+        "subject": "FIHR"
+      },
+      "4": {
+        "course": "2doC",
+        "subject": "Ciencias Sociales"
+      },
+      "5": {
+        "course": "4toA CyT",
+        "subject": "FIHR"
+      },
+      "6": null
+    },
+    "Martes": {
+      "1": {
+        "course": "5toB HyLM",
+        "subject": "FIHR"
+      },
+      "2": {
+        "course": "4toA HyLM",
+        "subject": "FIHR"
+      },
+      "3": {
+        "course": "2doC",
+        "subject": "Ciencias Sociales"
+      },
+      "4": {
+        "course": "4toA MyT",
+        "subject": "Matemática Financiera y Tecnología"
+      },
+      "5": {
+        "course": "4toA MyT",
+        "subject": "FIHR"
+      },
+      "6": {
+        "course": "6toA HyLM",
+        "subject": "FIHR"
+      }
+    },
+    "Miércoles": {
+      "1": null,
+      "2": null,
+      "3": null,
+      "4": {
+        "course": "5toA HyLM",
+        "subject": "Ciencias Sociales"
+      },
+      "5": null,
+      "6": null
+    },
+    "Jueves": {
+      "1": {
+        "course": "4toA MyT",
+        "subject": "Matemática Financiera y Tecnología"
+      },
+      "2": {
+        "course": "2doC",
+        "subject": "Ciencias Sociales"
+      },
+      "3": {
+        "course": "5toA HyLM",
+        "subject": "Ciencias Sociales"
+      },
+      "4": {
+        "course": "6toA MyT",
+        "subject": "FIHR"
+      },
+      "5": {
+        "course": "5toA HyLM",
+        "subject": "FIHR"
+      },
+      "6": {
+        "course": "5to B MyT",
+        "subject": "FIHR"
+      }
+    },
+    "Viernes": {
+      "1": null,
+      "2": null,
+      "3": {
+        "course": "2doC",
+        "subject": "Ciencias Sociales"
+      },
+      "4": {
+        "course": "5toA HyLM",
+        "subject": "Ciencias Sociales"
+      },
+      "5": {
+        "course": "4toA MyT",
+        "subject": "Matemática Financiera y Tecnología",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "4toA MyT",
+        "subject": "Matemática Financiera y Tecnología",
+        "isDoubleBlock": true
+      }
+    }
+  },
+  "NEVERLIN PAULA": {
+    "Lunes": {
+      "1": {
+        "course": "2doC",
+        "subject": "Ciencias Naturales"
+      },
+      "2": {
+        "course": "3roA",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "3roA",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "4": null,
+      "5": null,
+      "6": {
+        "course": "2doA",
+        "subject": "Ciencias Naturales"
+      }
+    },
+    "Martes": {
+      "1": null,
+      "2": {
+        "course": "2doB",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "2doB",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "3roB",
+        "subject": "Ciencias Naturales"
+      },
+      "5": {
+        "course": "2doA",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "2doA",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "2doC",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "2doC",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "3roB",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "3roB",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "3roA",
+        "subject": "Ciencias Naturales"
+      },
+      "6": {
+        "course": "3roC",
+        "subject": "Ciencias Naturales"
+      }
+    },
+    "Jueves": {
+      "1": null,
+      "2": {
+        "course": "3roC",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "3roC",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "2doB",
+        "subject": "Ciencias Naturales"
+      },
+      "5": {
+        "course": "2doC",
+        "subject": "Ciencias Naturales"
+      },
+      "6": {
+        "course": "3roB",
+        "subject": "Ciencias Naturales"
+      }
+    },
+    "Viernes": {
+      "1": null,
+      "2": {
+        "course": "3roA",
+        "subject": "Ciencias Naturales"
+      },
+      "3": {
+        "course": "3roC",
+        "subject": "Ciencias Naturales"
+      },
+      "4": {
+        "course": "2doB",
+        "subject": "Ciencias Naturales"
+      },
+      "5": {
+        "course": "2doA",
+        "subject": "Ciencias Naturales"
+      },
+      "6": null
+    }
+  },
+  "PAOLA CALCAÑO": {
+    "Lunes": {
+      "1": null,
+      "2": {
+        "course": "6toA HyLM",
+        "subject": "Análisis Crítico y Evaluación de Textos en Inglés"
+      },
+      "3": null,
+      "4": null,
+      "5": null,
+      "6": null
+    },
+    "Martes": {
+      "1": {
+        "course": "3roA/3roB/3roC",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "2": {
+        "course": "3roA/3roB/3roC",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "5toA HyLM/5toA MyT/5to B MyT/5toB HyLM",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "5toA HyLM/5toA MyT/5to B MyT/5toB HyLM",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "6toA HyLM/6toA MyT/6toB MyT",
+        "subject": "Inglés"
+      },
+      "2": {
+        "course": "6toA HyLM",
+        "subject": "Análisis Crítico y Evaluación de Textos en Inglés"
+      },
+      "3": {
+        "course": "2doC/2doB/2doA",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "2doC/2doB/2doA",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "4toA HyLM/4toA MyT/4toA CyT",
+        "subject": "Inglés"
+      },
+      "6": {
+        "course": "5toA MyT/5toA HyLM/5to B MyT/5toB HyLM",
+        "subject": "Inglés"
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "2doC/2doB/2doA",
+        "subject": "Inglés"
+      },
+      "2": null,
+      "3": {
+        "course": "4toA HyLM/4toA MyT/4toA CyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "4toA HyLM/4toA MyT/4toA CyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "6toA HyLM/6toA MyT/6toB MyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "6toA HyLM/6toA MyT/6toB MyT",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      }
+    },
+    "Viernes": {
+      "1": null,
+      "2": null,
+      "3": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "1roA/1roB/1roC/1ro D",
+        "subject": "Inglés",
+        "isDoubleBlock": true
+      },
+      "5": null,
+      "6": {
+        "course": "3roA/3roB/3roC",
+        "subject": "Inglés"
+      }
+    }
+  },
+  "RANDAL GARABITO": {
+    "Lunes": {
+      "1": {
+        "course": "6toA HyLM",
+        "subject": "Educación Física"
+      },
+      "2": {
+        "course": "6toA MyT",
+        "subject": "Educación Física"
+      },
+      "3": null,
+      "4": {
+        "course": "3roC",
+        "subject": "Educación Física"
+      },
+      "5": {
+        "course": "5toA MyT",
+        "subject": "Educación Física"
+      },
+      "6": null
+    },
+    "Martes": {
+      "1": {
+        "course": "2doA",
+        "subject": "Educación Física"
+      },
+      "2": {
+        "course": "4toA CyT",
+        "subject": "Educación Física"
+      },
+      "3": {
+        "course": "6toB MyT",
+        "subject": "Educación Física"
+      },
+      "4": {
+        "course": "2doC",
+        "subject": "Educación Física"
+      },
+      "5": {
+        "course": "3roC",
+        "subject": "Educación Física"
+      },
+      "6": null
+    },
+    "Miércoles": {
+      "1": {
+        "course": "2doA",
+        "subject": "Educación Física"
+      },
+      "2": {
+        "course": "2doB",
+        "subject": "Educación Física"
+      },
+      "3": null,
+      "4": {
+        "course": "4toA MyT",
+        "subject": "Educación Física"
+      },
+      "5": null,
+      "6": null
+    },
+    "Jueves": {
+      "1": {
+        "course": "5toB HyLM",
+        "subject": "Educación Física"
+      },
+      "2": {
+        "course": "4toA HyLM",
+        "subject": "Educación Física"
+      },
+      "3": {
+        "course": "3roB",
+        "subject": "Educación Física"
+      },
+      "4": {
+        "course": "3roA",
+        "subject": "Educación Física"
+      },
+      "5": {
+        "course": "2doB",
+        "subject": "Educación Física"
+      },
+      "6": null
+    },
+    "Viernes": {
+      "1": {
+        "course": "3roB",
+        "subject": "Educación Física"
+      },
+      "2": {
+        "course": "2doC",
+        "subject": "Educación Física"
+      },
+      "3": null,
+      "4": {
+        "course": "5to B MyT",
+        "subject": "Educación Física"
+      },
+      "5": {
+        "course": "3roA",
+        "subject": "Educación Física"
+      },
+      "6": null
+    }
+  },
+  "RAQUEL HERNANDEZ": {
+    "Lunes": {
+      "1": {
+        "course": "4toA CyT",
+        "subject": "Bología y Computaciòn"
+      },
+      "2": null,
+      "3": {
+        "course": "4toA MyT",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "4toA MyT",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "5": null,
+      "6": {
+        "course": "4toA CyT",
+        "subject": "Ciencias Naturales"
+      }
+    },
+    "Martes": {
+      "1": null,
+      "2": {
+        "course": "4toA MyT",
+        "subject": "Ciencias Naturales"
+      },
+      "3": {
+        "course": "4toA CyT",
+        "subject": "Bología y Computaciòn",
+        "isDoubleBlock": true
+      },
+      "4": {
+        "course": "4toA CyT",
+        "subject": "Bología y Computaciòn",
+        "isDoubleBlock": true
+      },
+      "5": {
+        "course": "4toA HyLM",
+        "subject": "Ciencias Naturales"
+      },
+      "6": null
+    },
+    "Miércoles": {
+      "1": null,
+      "2": {
+        "course": "4toA HyLM",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "3": {
+        "course": "4toA HyLM",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "4": null,
+      "5": {
+        "course": "5toA HyLM",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "5toA HyLM",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      }
+    },
+    "Jueves": {
+      "1": null,
+      "2": {
+        "course": "5toA HyLM",
+        "subject": "Ciencias Naturales"
+      },
+      "3": null,
+      "4": {
+        "course": "4toA CyT",
+        "subject": "Ciencias Naturales"
+      },
+      "5": {
+        "course": "4toA CyT",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      },
+      "6": {
+        "course": "4toA CyT",
+        "subject": "Bloque Ciencias Naturales",
+        "isDoubleBlock": true
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "4toA MyT",
+        "subject": "Ciencias Naturales"
+      },
+      "2": null,
+      "3": null,
+      "4": {
+        "course": "4toA HyLM",
+        "subject": "Ciencias Naturales"
+      },
+      "5": {
+        "course": "4toA CyT",
+        "subject": "Bología y Computaciòn"
+      },
+      "6": {
+        "course": "5toA HyLM",
+        "subject": "Ciencias Naturales"
+      }
+    }
+  },
+  "ROY ROJAS": {
+    "Lunes": {
+      "1": null,
+      "2": {
+        "course": "1roA",
+        "subject": "Educación Física"
+      },
+      "3": {
+        "course": "1roB",
+        "subject": "Educación Física"
+      },
+      "4": null,
+      "5": {
+        "course": "1roC",
+        "subject": "Educación Física"
+      },
+      "6": null
+    },
+    "Martes": {
+      "1": null,
+      "2": null,
+      "3": null,
+      "4": null,
+      "5": null,
+      "6": null
+    },
+    "Miércoles": {
+      "1": {
+        "course": "1ro D",
+        "subject": "Educación Física"
+      },
+      "2": {
+        "course": "1roB",
+        "subject": "Educación Física"
+      },
+      "3": {
+        "course": "1roA",
+        "subject": "Educación Física"
+      },
+      "4": {
+        "course": "1roC",
+        "subject": "Educación Física"
+      },
+      "5": null,
+      "6": null
+    },
+    "Jueves": {
+      "1": null,
+      "2": null,
+      "3": null,
+      "4": null,
+      "5": null,
+      "6": null
+    },
+    "Viernes": {
+      "1": null,
+      "2": null,
+      "3": null,
+      "4": null,
+      "5": null,
+      "6": null
+    }
+  },
+  "SIXTA ESPINAL": {
+    "Lunes": {
+      "1": {
+        "course": "6toA MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "2": null,
+      "3": {
+        "course": "6toA HyLM",
+        "subject": "Ciencias Sociales"
+      },
+      "4": {
+        "course": "6toB MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "5": {
+        "course": "5toA MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "6": {
+        "course": "5toB HyLM",
+        "subject": "Ciencias Sociales"
+      }
+    },
+    "Martes": {
+      "1": null,
+      "2": {
+        "course": "6toA MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "3": {
+        "course": "5toA MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "4": {
+        "course": "6toA HyLM",
+        "subject": "Ciencias Sociales"
+      },
+      "5": null,
+      "6": null
+    },
+    "Miércoles": {
+      "1": {
+        "course": "5to B MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "2": {
+        "course": "6toB MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "3": {
+        "course": "6toA HyLM",
+        "subject": "Ciencias Sociales"
+      },
+      "4": {
+        "course": "6toA MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "5": null,
+      "6": null
+    },
+    "Jueves": {
+      "1": null,
+      "2": {
+        "course": "6toB MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "3": {
+        "course": "5to B MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "4": {
+        "course": "5toA MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "5": null,
+      "6": null
+    },
+    "Viernes": {
+      "1": {
+        "course": "6toA MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "2": {
+        "course": "6toA HyLM",
+        "subject": "Ciencias Sociales"
+      },
+      "3": null,
+      "4": {
+        "course": "5to B MyT",
+        "subject": "Ciencias Sociales"
+      },
+      "5": {
+        "course": "5toB HyLM",
+        "subject": "Ciencias Sociales"
+      },
+      "6": {
+        "course": "6toB MyT",
+        "subject": "Ciencias Sociales"
+      }
+    }
+  },
+  "SUCCES VELIMAT": {
+    "Lunes": {
+      "1": null,
+      "2": {
+        "course": "2doC",
+        "subject": "Francés"
+      },
+      "3": {
+        "course": "3roB",
+        "subject": "Francés"
+      },
+      "4": {
+        "course": "1roB",
+        "subject": "Francés"
+      },
+      "5": {
+        "course": "3roC",
+        "subject": "Francés"
+      },
+      "6": {
+        "course": "2doB",
+        "subject": "Francés"
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "2doC",
+        "subject": "Francés"
+      },
+      "2": null,
+      "3": {
+        "course": "3roA",
+        "subject": "Francés"
+      },
+      "4": {
+        "course": "2doB",
+        "subject": "Francés"
+      },
+      "5": null,
+      "6": {
+        "course": "4toA HyLM",
+        "subject": "Francés"
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "3roB",
+        "subject": "Francés"
+      },
+      "2": null,
+      "3": {
+        "course": "4toA MyT",
+        "subject": "Francés"
+      },
+      "4": {
+        "course": "1roA",
+        "subject": "Francés"
+      },
+      "5": {
+        "course": "5toA HyLM",
+        "subject": "Francés"
+      },
+      "6": {
+        "course": "2doA",
+        "subject": "Francés"
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "3roA",
+        "subject": "Francés"
+      },
+      "2": {
+        "course": "1ro D",
+        "subject": "Francés"
+      },
+      "3": null,
+      "4": {
+        "course": "1roC",
+        "subject": "Francés"
+      },
+      "5": {
+        "course": "1roB",
+        "subject": "Francés"
+      },
+      "6": null
+    },
+    "Viernes": {
+      "1": {
+        "course": "1ro D",
+        "subject": "Francés"
+      },
+      "2": {
+        "course": "1roC",
+        "subject": "Francés"
+      },
+      "3": {
+        "course": "1roA",
+        "subject": "Francés"
+      },
+      "4": {
+        "course": "2doA",
+        "subject": "Francés"
+      },
+      "5": {
+        "course": "3roC",
+        "subject": "Francés"
+      },
+      "6": {
+        "course": "4toA CyT",
+        "subject": "Francés"
+      }
+    }
+  },
+  "YENNY VILLANUEVA": {
+    "Lunes": {
+      "1": {
+        "course": "2doB",
+        "subject": "Ciencias Sociales"
+      },
+      "2": null,
+      "3": {
+        "course": "2doA",
+        "subject": "Ciencias Sociales"
+      },
+      "4": {
+        "course": "1ro D",
+        "subject": "Ciencias Sociales"
+      },
+      "5": {
+        "course": "1roB",
+        "subject": "Ciencias Sociales"
+      },
+      "6": {
+        "course": "1roC",
+        "subject": "Ciencias Sociales"
+      }
+    },
+    "Martes": {
+      "1": {
+        "course": "1roA",
+        "subject": "Ciencias Sociales"
+      },
+      "2": {
+        "course": "2doA",
+        "subject": "Ciencias Sociales"
+      },
+      "3": null,
+      "4": null,
+      "5": {
+        "course": "1roB",
+        "subject": "Ciencias Sociales"
+      },
+      "6": {
+        "course": "2doB",
+        "subject": "Ciencias Sociales"
+      }
+    },
+    "Miércoles": {
+      "1": {
+        "course": "1roC",
+        "subject": "Ciencias Sociales"
+      },
+      "2": {
+        "course": "1roA",
+        "subject": "Ciencias Sociales"
+      },
+      "3": null,
+      "4": {
+        "course": "1ro D",
+        "subject": "Ciencias Sociales"
+      },
+      "5": {
+        "course": "2doA",
+        "subject": "Ciencias Sociales"
+      },
+      "6": {
+        "course": "1roB",
+        "subject": "Ciencias Sociales"
+      }
+    },
+    "Jueves": {
+      "1": {
+        "course": "1roA",
+        "subject": "Ciencias Sociales"
+      },
+      "2": null,
+      "3": {
+        "course": "1ro D",
+        "subject": "Ciencias Sociales"
+      },
+      "4": {
+        "course": "1roB",
+        "subject": "Ciencias Sociales"
+      },
+      "5": {
+        "course": "1roC",
+        "subject": "Ciencias Sociales"
+      },
+      "6": {
+        "course": "2doB",
+        "subject": "Ciencias Sociales"
+      }
+    },
+    "Viernes": {
+      "1": {
+        "course": "2doA",
+        "subject": "Ciencias Sociales"
+      },
+      "2": {
+        "course": "2doB",
+        "subject": "Ciencias Sociales"
+      },
+      "3": {
+        "course": "1roC",
+        "subject": "Ciencias Sociales"
+      },
+      "4": null,
+      "5": {
+        "course": "1roA",
+        "subject": "Ciencias Sociales"
+      },
+      "6": {
+        "course": "1ro D",
+        "subject": "Ciencias Sociales"
+      }
+    }
+  }
+};
+    const DAYS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
+    const PERIODS = ["1","2","3","4","5","6"];
+    const TIMES = {"1":"7:45 – 8:30 AM","2":"8:30 – 9:15 AM","3":"9:15 – 10:00 AM","4":"10:00 – 10:45 AM","5":"11:15 AM – 12:00 PM","6":"12:00 – 12:45 PM"};
+    const RECESS_TIME = {"afterPeriod":"4","time":"10:45 – 11:15 AM","label":"RECREO GENERAL"};
+
+    // State
+    let currentDay = "Lunes";
+    let absentTeachers = [];
+    let assignments = {}; // absentTeacher -> period -> substituteTeacher
+    let activeModalSlot = null; // { absentTeacher, period }
+    let modalCycleFilter = 'all';
+    let modalGradeFilter = 'all';
+
+    // Pedagogic Affinity & Curriculum Analysis
+    const GRADE_LABELS = {
+      '1ro': '1.º',
+      '2do': '2.º',
+      '3ro': '3.º',
+      '4to': '4.º',
+      '5to': '5.º',
+      '6to': '6.º'
+    };
+
+    function extractGradesFromCourse(course) {
+      if (!course) return [];
+      const grades = [];
+      const norm = course.toLowerCase();
+      if (norm.includes('1ro') || norm.includes('1.º') || norm.includes('1ero') || norm.includes('1er')) grades.push('1ro');
+      if (norm.includes('2do') || norm.includes('2.º')) grades.push('2do');
+      if (norm.includes('3ro') || norm.includes('3.º') || norm.includes('3er')) grades.push('3ro');
+      if (norm.includes('4to') || norm.includes('4.º')) grades.push('4to');
+      if (norm.includes('5to') || norm.includes('5.º')) grades.push('5to');
+      if (norm.includes('6to') || norm.includes('6.º')) grades.push('6to');
+      return grades;
+    }
+
+    function extractCycleFromCourse(course) {
+      const grades = extractGradesFromCourse(course);
+      if (grades.length === 0) return null;
+      const has1st = grades.some(g => ['1ro', '2do', '3ro'].includes(g));
+      const has2nd = grades.some(g => ['4to', '5to', '6to'].includes(g));
+      if (has1st && !has2nd) return '1er_ciclo';
+      if (has2nd && !has1st) return '2do_ciclo';
+      return has1st ? '1er_ciclo' : null;
+    }
+
+    const teacherProfiles = {};
+    function getTeacherProfile(teacherName) {
+      if (teacherProfiles[teacherName]) return teacherProfiles[teacherName];
+      const tSched = SCHEDULE[teacherName] || {};
+      const gradeCount = { '1ro': 0, '2do': 0, '3ro': 0, '4to': 0, '5to': 0, '6to': 0 };
+      for (const day of Object.keys(tSched)) {
+        for (const p of Object.keys(tSched[day] || {})) {
+          const slot = tSched[day][p];
+          if (slot && slot.course) {
+            const grades = extractGradesFromCourse(slot.course);
+            grades.forEach(g => { gradeCount[g] = (gradeCount[g] || 0) + 1; });
+          }
+        }
+      }
+      const grades = Object.keys(gradeCount).filter(g => gradeCount[g] > 0);
+      const cycles = [];
+      if (grades.some(g => ['1ro', '2do', '3ro'].includes(g))) cycles.push('1er_ciclo');
+      if (grades.some(g => ['4to', '5to', '6to'].includes(g))) cycles.push('2do_ciclo');
+      teacherProfiles[teacherName] = { name: teacherName, grades, cycles, gradeCount };
+      return teacherProfiles[teacherName];
+    }
+
+    function getCandidateAffinity(candidateName, targetCourse) {
+      if (!targetCourse) {
+        return { isSameGrade: false, isSameCycle: false, level: 'general', label: '', score: 0 };
+      }
+      const prof = getTeacherProfile(candidateName);
+      const targetGrades = extractGradesFromCourse(targetCourse);
+      const targetCycle = extractCycleFromCourse(targetCourse);
+
+      const matchingGrades = targetGrades.filter(g => prof.grades.includes(g));
+      const isSameGrade = matchingGrades.length > 0;
+      const isSameCycle = targetCycle ? prof.cycles.includes(targetCycle) : false;
+
+      let level = 'general';
+      let label = '';
+      let score = 0;
+
+      if (isSameGrade) {
+        level = 'exact_grade';
+        label = 'Conoce a los estudiantes (' + matchingGrades.map(g => GRADE_LABELS[g] || g).join(', ') + ')';
+        score = 300;
+      } else if (isSameCycle) {
+        level = 'same_cycle';
+        label = (targetCycle === '1er_ciclo' ? '1.er Ciclo (1.º-3.º)' : '2.do Ciclo (4.º-6.º)');
+        score = 150;
+      }
+
+      return { isSameGrade, isSameCycle, level, label, score };
+    }
+
+    function doesTeacherMatchFilter(teacherName, cycleFilter, gradeFilter) {
+      const prof = getTeacherProfile(teacherName);
+      if (cycleFilter !== 'all' && !prof.cycles.includes(cycleFilter)) {
+        return false;
+      }
+      if (gradeFilter !== 'all' && !prof.grades.includes(gradeFilter)) {
+        return false;
+      }
+      return true;
+    }
+
+    // Init day based on current weekday if valid
+    const dayMap = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    const todayName = dayMap[new Date().getDay()];
+    if (DAYS.includes(todayName)) {
+      currentDay = todayName;
+    }
+
+    function isTeacherEligible(teacherName, day) {
+      if (teacherName === "ROY ROJAS") return false;
+      if (teacherName === "MARINO SALDAÑA" && day === "Lunes") return false;
+      return true;
+    }
+
+    function getFreeCount(teacherName, day) {
+      const dSched = SCHEDULE[teacherName]?.[day];
+      if (!dSched) return 0;
+      let count = 0;
+      for (const p of PERIODS) {
+        if (!dSched[p]) count++;
+      }
+      return count;
+    }
+
+    function getSubCount(teacherName) {
+      let count = 0;
+      for (const abs of Object.keys(assignments)) {
+        for (const p of Object.keys(assignments[abs] || {})) {
+          if (assignments[abs][p] === teacherName) count++;
+        }
+      }
+      return count;
+    }
+
+    function isAssignedInPeriod(teacherName, period) {
+      for (const abs of Object.keys(assignments)) {
+        if (assignments[abs]?.[period] === teacherName) return true;
+      }
+      return false;
+    }
+
+    function getCandidates(day, period, currentAssigned, targetCourse = '', filterCycle = 'all', filterGrade = 'all') {
+      const absentSet = new Set(absentTeachers);
+      const candidates = [];
+
+      for (const name of Object.keys(SCHEDULE).sort()) {
+        if (absentSet.has(name)) continue;
+        if (!isTeacherEligible(name, day)) continue;
+
+        if (isAssignedInPeriod(name, period) && name !== currentAssigned) continue;
+
+        const slot = SCHEDULE[name]?.[day]?.[period];
+        if (slot !== null && slot !== undefined) continue;
+
+        if (!doesTeacherMatchFilter(name, filterCycle, filterGrade)) continue;
+
+        const freeCount = getFreeCount(name, day);
+        const subCount = getSubCount(name);
+        const alreadyUsed = subCount > (currentAssigned === name ? 1 : 0);
+        const affinity = getCandidateAffinity(name, targetCourse);
+
+        // Overall score: affinity bonus (300 for same grade, 150 for same cycle) + free periods - already used
+        const totalScore = affinity.score + (freeCount * 10) - (alreadyUsed ? 80 : 0);
+
+        candidates.push({
+          name,
+          freeCount,
+          subCount,
+          alreadyUsed,
+          affinity,
+          totalScore,
+          profile: getTeacherProfile(name)
+        });
+      }
+
+      candidates.sort((a, b) => {
+        if (a.alreadyUsed !== b.alreadyUsed) return a.alreadyUsed ? 1 : -1;
+        if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+        if (b.freeCount !== a.freeCount) return b.freeCount - a.freeCount;
+        return a.name.localeCompare(b.name);
+      });
+
+      return candidates;
+    }
+
+    // UI Renders
+    function renderDayTabs() {
+      const container = document.getElementById('dayTabs');
+      container.innerHTML = '';
+      DAYS.forEach(d => {
+        const btn = document.createElement('div');
+        btn.className = 'day-tab' + (d === currentDay ? ' active' : '');
+        btn.textContent = d;
+        btn.onclick = () => {
+          if (currentDay !== d) {
+            currentDay = d;
+            assignments = {}; // reset per day
+            renderAll();
+          }
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function renderTeacherSelect() {
+      const sel = document.getElementById('teacherSelect');
+      sel.innerHTML = '<option value="">-- Seleccionar Docente Ausente --</option>';
+      const absentSet = new Set(absentTeachers);
+      Object.keys(SCHEDULE).sort().forEach(name => {
+        if (!absentSet.has(name)) {
+          const prof = getTeacherProfile(name);
+          const cycleTxt = prof.cycles.map(c => c === '1er_ciclo' ? '1.er Ciclo' : '2.do Ciclo').join(' y ');
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name + (cycleTxt ? ' (' + cycleTxt + ')' : '');
+          sel.appendChild(opt);
+        }
+      });
+    }
+
+    function renderAbsentChips() {
+      const container = document.getElementById('absentChips');
+      container.innerHTML = '';
+      if (absentTeachers.length === 0) {
+        container.innerHTML = '<span style="color: var(--text-muted); font-size: 13px;">No hay profesores ausentes agregados para el ' + currentDay + '.</span>';
+        return;
+      }
+
+      absentTeachers.forEach(name => {
+        const tSched = SCHEDULE[name]?.[currentDay] || {};
+        let total = 0, covered = 0;
+        PERIODS.forEach(p => {
+          if (tSched[p]) {
+            total++;
+            if (assignments[name]?.[p]) covered++;
+          }
+        });
+
+        const prof = getTeacherProfile(name);
+        const cycleTxt = prof.cycles.map(c => c === '1er_ciclo' ? '1.er Ciclo' : '2.do Ciclo').join(' y ');
+
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.innerHTML = '<span>' + name + (cycleTxt ? ' <small style="opacity:0.8;">(' + cycleTxt + ')</small>' : '') + '</span>' +
+          '<span class="chip-count ' + (covered === total && total > 0 ? 'complete' : 'pending') + '">' + covered + '/' + total + '</span>' +
+          '<span class="chip-remove" title="Quitar">✕</span>';
+
+        chip.querySelector('.chip-remove').onclick = () => {
+          absentTeachers = absentTeachers.filter(t => t !== name);
+          delete assignments[name];
+          renderAll();
+        };
+
+        container.appendChild(chip);
+      });
+    }
+
+    function renderSchedules() {
+      const container = document.getElementById('absentSchedulesContainer');
+      container.innerHTML = '';
+
+      if (absentTeachers.length === 0) {
+        container.innerHTML = '<div class="panel empty-state"><strong>No hay ausencias registradas hoy.</strong><p style="margin-top: 6px;">Seleccione un profesor arriba y haga clic en "+ Agregar Ausente" para comenzar.</p></div>';
+        return;
+      }
+
+      absentTeachers.forEach(absentTeacher => {
+        const tSched = SCHEDULE[absentTeacher]?.[currentDay] || {};
+        const card = document.createElement('div');
+        card.className = 'teacher-card';
+
+        const prof = getTeacherProfile(absentTeacher);
+        const cycleTxt = prof.cycles.map(c => c === '1er_ciclo' ? '1.er Ciclo' : '2.do Ciclo').join(' y ');
+
+        let headerHtml = '<div class="teacher-card-header"><div><h3>Prof. ' + absentTeacher + '</h3>' +
+          (cycleTxt ? '<div style="font-size: 11px; color: var(--text-muted);">' + cycleTxt + ' (' + prof.grades.map(g => GRADE_LABELS[g] || g).join(', ') + ')</div>' : '') +
+          '</div>';
+        let total = 0, covered = 0;
+        PERIODS.forEach(p => {
+          if (tSched[p]) {
+            total++;
+            if (assignments[absentTeacher]?.[p]) covered++;
+          }
+        });
+        headerHtml += '<span class="chip-count ' + (covered === total ? 'complete' : 'pending') + '">' + covered + '/' + total + ' cubiertos</span></div>';
+
+        let listHtml = '<div class="periods-list">';
+
+        PERIODS.forEach((p, idx) => {
+          const slot = tSched[p];
+          const assignedSub = assignments[absentTeacher]?.[p];
+
+          listHtml += '<div class="period-item">';
+          listHtml += '<div class="period-info">';
+          listHtml += '<div class="period-num">' + p + '</div>';
+          listHtml += '<div class="period-time">' + (TIMES[p] || '') + '</div>';
+          listHtml += '<div class="period-details">';
+
+          if (slot) {
+            const courseCycle = extractCycleFromCourse(slot.course);
+            const cycleBadge = courseCycle ? '<span class="badge-cycle">' + (courseCycle === '1er_ciclo' ? '1.er Ciclo' : '2.do Ciclo') + '</span>' : '';
+            listHtml += '<div class="period-course">' + slot.course + ' ' + cycleBadge + (slot.isDoubleBlock ? '<span class="badge-double">Bloque Doble</span>' : '') + '</div>';
+            listHtml += '<div class="period-subj">' + slot.subject + '</div>';
+          } else {
+            listHtml += '<div class="period-subj" style="font-style: italic; color: #7B8F82;">Período Libre</div>';
+          }
+          listHtml += '</div></div>';
+
+          // Action Pill
+          if (!slot) {
+            listHtml += '<div class="slot-pill free">Libre</div>';
+          } else if (assignedSub) {
+            const aff = getCandidateAffinity(assignedSub, slot.course);
+            let affIcon = '';
+            if (aff.isSameGrade) {
+              affIcon = ' <span class="badge-affinity" style="font-size:9px; padding:1px 5px; margin-left:4px;">⭐ Mismo Grado</span>';
+            } else if (aff.isSameCycle) {
+              affIcon = ' <span class="badge-affinity" style="font-size:9px; padding:1px 5px; margin-left:4px; background:#EBF5ED; color:#2D4F3C; border-color:#BCE3C5;">✓ Mismo Ciclo</span>';
+            }
+            listHtml += '<div class="slot-pill covered" onclick="openModal(\'' + absentTeacher + '\', \'' + p + '\')">✓ ' + assignedSub + affIcon + '</div>';
+          } else {
+            listHtml += '<div class="slot-pill uncovered" onclick="openModal(\'' + absentTeacher + '\', \'' + p + '\')">⚠ Asignar Sustituto</div>';
+          }
+
+          listHtml += '</div>';
+
+          // Recreo after period 4
+          if (p === RECESS_TIME.afterPeriod) {
+            listHtml += '<div class="recess-banner"><span>☕ ' + RECESS_TIME.label + '</span><span>' + RECESS_TIME.time + '</span></div>';
+          }
+        });
+
+        listHtml += '</div>';
+        card.innerHTML = headerHtml + listHtml;
+        container.appendChild(card);
+      });
+    }
+
+    function renderSubstituteSelect() {
+      const sel = document.getElementById('substituteSelect');
+      sel.innerHTML = '<option value="">-- Seleccionar Sustituto con Asignaciones --</option>';
+      const subs = new Set();
+      for (const abs of Object.keys(assignments)) {
+        for (const p of Object.keys(assignments[abs] || {})) {
+          if (assignments[abs][p]) subs.add(assignments[abs][p]);
+        }
+      }
+      Array.from(subs).sort().forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        sel.appendChild(opt);
+      });
+    }
+
+    function renderSummary() {
+      let totalReq = 0, covered = 0;
+      absentTeachers.forEach(abs => {
+        const tSched = SCHEDULE[abs]?.[currentDay] || {};
+        PERIODS.forEach(p => {
+          if (tSched[p]) {
+            totalReq++;
+            if (assignments[abs]?.[p]) covered++;
+          }
+        });
+      });
+
+      const isComplete = totalReq > 0 && covered === totalReq;
+      const badge = document.getElementById('coverageHeaderBadge');
+      if (badge) {
+        badge.innerHTML = '<span class="chip-count ' + (isComplete ? 'complete' : 'pending') + '">' +
+          covered + '/' + totalReq + ' horas cubiertas</span>';
+      }
+
+      // Show or hide policy selection box
+      const policyContainer = document.getElementById('policyContainer');
+      if (policyContainer) {
+        policyContainer.style.display = absentTeachers.length > 0 ? 'flex' : 'none';
+      }
+
+      const sumText = document.getElementById('planSummaryText');
+      if (sumText) {
+        sumText.textContent = currentDay + ' • ' + absentTeachers.length + ' ausentes • ' + covered + ' de ' + totalReq + ' cubiertas';
+      }
+    }
+
+    function renderAll() {
+      renderDayTabs();
+      renderTeacherSelect();
+      renderAbsentChips();
+      renderSchedules();
+      renderSubstituteSelect();
+      renderSummary();
+    }
+
+    // Modal with Pedagogic Affinity Filters
+    function renderCandidateModal() {
+      if (!activeModalSlot) return;
+      const { absentTeacher, period } = activeModalSlot;
+      const modal = document.getElementById('candidateModal');
+      const title = document.getElementById('modalTitle');
+      const sub = document.getElementById('modalSubtitle');
+      const filtersContainer = document.getElementById('modalFilters');
+      const body = document.getElementById('modalBody');
+
+      const slot = SCHEDULE[absentTeacher]?.[currentDay]?.[period];
+      const curAssigned = assignments[absentTeacher]?.[period];
+      const course = slot ? slot.course : '';
+      const targetCycle = extractCycleFromCourse(course);
+      const targetGrades = extractGradesFromCourse(course);
+
+      title.textContent = 'Período ' + period + ' (' + (TIMES[period] || '') + ')';
+      sub.textContent = 'Docente Ausente: ' + absentTeacher + (slot ? ' • ' + slot.course + ' (' + slot.subject + ')' : '');
+
+      // Render Modal Filter Bar
+      const allCands = getCandidates(currentDay, period, curAssigned, course, 'all', 'all');
+      const c1Cands = getCandidates(currentDay, period, curAssigned, course, '1er_ciclo', 'all');
+      const c2Cands = getCandidates(currentDay, period, curAssigned, course, '2do_ciclo', 'all');
+
+      let filtersHtml = '<div class="filter-row">' +
+        '<span class="filter-label">Filtrar Ciclo:</span>' +
+        '<button class="filter-pill ' + (modalCycleFilter === 'all' ? 'active' : '') + '" onclick="setModalCycleFilter(\'all\')">Todos (' + allCands.length + ')</button>' +
+        '<button class="filter-pill ' + (modalCycleFilter === '1er_ciclo' ? 'active' : '') + '" onclick="setModalCycleFilter(\'1er_ciclo\')">1.er Ciclo (1.º, 2.º, 3.º) [' + c1Cands.length + ']</button>' +
+        '<button class="filter-pill ' + (modalCycleFilter === '2do_ciclo' ? 'active' : '') + '" onclick="setModalCycleFilter(\'2do_ciclo\')">2.do Ciclo (4.º, 5.º, 6.º) [' + c2Cands.length + ']</button>' +
+        '</div>';
+
+      filtersHtml += '<div class="filter-row" style="margin-top: 4px;">' +
+        '<span class="filter-label">Por Grado:</span>' +
+        '<button class="filter-pill ' + (modalGradeFilter === 'all' ? 'active' : '') + '" onclick="setModalGradeFilter(\'all\')">Todos los grados</button>';
+      ['1ro', '2do', '3ro', '4to', '5to', '6to'].forEach(g => {
+        const isTarget = targetGrades.includes(g);
+        filtersHtml += '<button class="filter-pill ' + (modalGradeFilter === g ? 'active' : '') + '" onclick="setModalGradeFilter(\'' + g + '\')">' +
+          (isTarget ? '★ ' : '') + GRADE_LABELS[g] + '</button>';
+      });
+      filtersHtml += '</div>';
+      filtersContainer.innerHTML = filtersHtml;
+
+      // Filtered candidates
+      const candidates = getCandidates(currentDay, period, curAssigned, course, modalCycleFilter, modalGradeFilter);
+      body.innerHTML = '';
+
+      // Pedagogic Context Banner
+      if (slot && course) {
+        const cycleName = targetCycle === '1er_ciclo' ? '1.er Ciclo (1.º, 2.º, 3.º)' : (targetCycle === '2do_ciclo' ? '2.do Ciclo (4.º, 5.º, 6.º)' : '');
+        body.innerHTML += '<div class="course-affinity-box">' +
+          '<div><strong>' + slot.course + ' • ' + slot.subject + '</strong>' +
+          (cycleName ? '<span class="badge-cycle" style="margin-left: 8px;">' + cycleName + '</span>' : '') +
+          '<div style="font-size: 11px; margin-top: 2px; color: #376045;">★ Afinidad Pedagógica: los docentes que imparten en este grado o ciclo ya conocen la dinámica de estos alumnos.</div>' +
+          '</div>' +
+          '</div>';
+      }
+
+      if (curAssigned) {
+        const assignedBanner = document.createElement('div');
+        assignedBanner.style.cssText = 'background: #E8F5E9; border: 1px solid #A3D9A5; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;';
+        assignedBanner.innerHTML = '<span><strong>Sustituto Actual:</strong> ' + curAssigned + '</span>' +
+          '<button class="btn-remove-sub" onclick="removeAssignedSub()">Quitar Asignación</button>';
+        body.appendChild(assignedBanner);
+      }
+
+      if (candidates.length === 0) {
+        body.innerHTML += '<div style="color: var(--status-red); text-align: center; padding: 24px;">' +
+          'No se encontraron profesores con este período libre que cumplan los filtros seleccionados.<br>' +
+          '<button class="btn-outline" style="margin-top: 10px; font-size: 11px;" onclick="resetModalFilters()">Ver todos los docentes disponibles</button>' +
+          '</div>';
+      } else {
+        candidates.forEach(c => {
+          const card = document.createElement('div');
+          card.className = 'candidate-card' + (c.alreadyUsed ? ' used-today' : '');
+
+          const pct = Math.round((c.freeCount / 6) * 100);
+
+          let affinityBadge = '';
+          if (c.affinity.isSameGrade) {
+            affinityBadge = '<span class="badge-affinity">⭐ ' + c.affinity.label + '</span>';
+          } else if (c.affinity.isSameCycle) {
+            affinityBadge = '<span class="badge-affinity" style="background:#EBF5ED; color:#2D4F3C; border-color:#BCE3C5;">✓ ' + c.affinity.label + '</span>';
+          }
+
+          const gradesStr = c.profile.grades.map(g => GRADE_LABELS[g] || g).join(', ');
+
+          card.innerHTML = '<div>' +
+            '<div class="candidate-name">' + c.name + affinityBadge +
+            (c.alreadyUsed ? ' <span style="font-size: 10px; background: #EDE0D4; color: #7F4F24; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">Ya asignado hoy (' + c.subCount + ')</span>' : '') +
+            '</div>' +
+            '<div class="candidate-profile-tag">Imparte: ' + (gradesStr || 'Secundaria') + ' • ' + c.freeCount + ' períodos libres hoy</div>' +
+            '<div class="avail-bar-wrap"><div class="avail-bar-fill" style="width: ' + pct + '%;"></div></div>' +
+            '</div>' +
+            '<div>' +
+            (curAssigned === c.name ? '<span style="color: var(--status-green); font-weight: bold; font-size: 13px;">✓ Asignado</span>' : '<button class="btn-choose" onclick="chooseCandidate(\'' + c.name + '\')">Elegir</button>') +
+            '</div>';
+
+          body.appendChild(card);
+        });
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    window.openModal = function(absentTeacher, period) {
+      activeModalSlot = { absentTeacher, period };
+      modalCycleFilter = 'all';
+      modalGradeFilter = 'all';
+      renderCandidateModal();
+    };
+
+    window.setModalCycleFilter = function(cycle) {
+      modalCycleFilter = cycle;
+      renderCandidateModal();
+    };
+
+    window.setModalGradeFilter = function(grade) {
+      modalGradeFilter = grade;
+      renderCandidateModal();
+    };
+
+    window.resetModalFilters = function() {
+      modalCycleFilter = 'all';
+      modalGradeFilter = 'all';
+      renderCandidateModal();
+    };
+
+    window.chooseCandidate = function(candName) {
+      if (!activeModalSlot) return;
+      const { absentTeacher, period } = activeModalSlot;
+      if (!assignments[absentTeacher]) assignments[absentTeacher] = {};
+      assignments[absentTeacher][period] = candName;
+      document.getElementById('candidateModal').style.display = 'none';
+      renderAll();
+    };
+
+    window.removeAssignedSub = function() {
+      if (!activeModalSlot) return;
+      const { absentTeacher, period } = activeModalSlot;
+      if (assignments[absentTeacher]) {
+        delete assignments[absentTeacher][period];
+      }
+      document.getElementById('candidateModal').style.display = 'none';
+      renderAll();
+    };
+
+    document.getElementById('btnCloseModal').onclick = () => {
+      document.getElementById('candidateModal').style.display = 'none';
+    };
+
+    // Add Absent
+    document.getElementById('btnAddAbsent').onclick = () => {
+      const sel = document.getElementById('teacherSelect');
+      const val = sel.value;
+      if (val && !absentTeachers.includes(val)) {
+        absentTeachers.push(val);
+        renderAll();
+      }
+    };
+
+    // Auto Assign with Pedagogical Affinity
+    document.getElementById('btnAutoAssign').onclick = () => {
+      if (absentTeachers.length === 0) {
+        alert("Por favor agregue al menos un docente ausente.");
+        return;
+      }
+
+      const policySelect = document.getElementById('autoAssignPolicySelect');
+      const policy = policySelect ? policySelect.value : 'smart_affinity';
+      const policyLabels = {
+        smart_affinity: 'Afinidad Pedagógica (mismo grado y ciclo)',
+        only_1er_ciclo: 'Solo 1.er Ciclo (1.º, 2.º, 3.º)',
+        only_2do_ciclo: 'Solo 2.do Ciclo (4.º, 5.º, 6.º)',
+        balanced_all: 'Equitativa General (solo disponibilidad horaria)'
+      };
+
+      const pending = [];
+      absentTeachers.forEach(abs => {
+        const tSched = SCHEDULE[abs]?.[currentDay] || {};
+        PERIODS.forEach(p => {
+          if (tSched[p] && !assignments[abs]?.[p]) {
+            const course = tSched[p].course;
+            let filterCycle = 'all';
+            if (policy === 'only_1er_ciclo') filterCycle = '1er_ciclo';
+            if (policy === 'only_2do_ciclo') filterCycle = '2do_ciclo';
+
+            const cands = getCandidates(currentDay, p, undefined, course, filterCycle, 'all');
+            pending.push({ abs, p, course, count: cands.length, slot: tSched[p] });
+          }
+        });
+      });
+
+      if (pending.length === 0) {
+        alert("Todos los períodos de los docentes ausentes ya se encuentran cubiertos.");
+        return;
+      }
+
+      // Sort pending: fewest candidate options first to prevent contention
+      pending.sort((a, b) => a.count - b.count);
+
+      let assigned = 0;
+      pending.forEach(req => {
+        let filterCycle = 'all';
+        if (policy === 'only_1er_ciclo') filterCycle = '1er_ciclo';
+        if (policy === 'only_2do_ciclo') filterCycle = '2do_ciclo';
+
+        const cands = getCandidates(currentDay, req.p, undefined, req.course, filterCycle, 'all');
+        if (cands.length > 0) {
+          if (!assignments[req.abs]) assignments[req.abs] = {};
+          assignments[req.abs][req.p] = cands[0].name;
+          assigned++;
+        }
+      });
+
+      renderAll();
+      alert("⚡ Auto-asignación ejecutada con criterio: " + policyLabels[policy] + ".\nSe asignaron " + assigned + " período(s) exitosamente.");
+    };
+
+    // Canvas 2D Exporter Functions
+    function ellipsize(ctx, text, maxWidth) {
+      if (ctx.measureText(text).width <= maxWidth) return text;
+      let t = text;
+      while (t.length > 0 && ctx.measureText(t + '…').width > maxWidth) {
+        t = t.slice(0, -1);
+      }
+      return t + '…';
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let curY = y;
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+          ctx.fillText(line.trim(), x, curY);
+          line = words[n] + ' ';
+          curY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line.trim(), x, curY);
+      return curY + lineHeight;
+    }
+
+    function drawRoundedRect(ctx, x, y, w, h, r, fill, stroke) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.stroke(); }
+    }
+
+    // Export Plan Image
+    document.getElementById('btnExportPlanImage').onclick = () => {
+      try {
+        if (absentTeachers.length === 0) {
+          alert("No hay ausentes seleccionados para exportar.");
+          return;
+        }
+
+        const logicalWidth = 900;
+        const padding = 40;
+        const contentWidth = logicalWidth - padding * 2;
+
+        let estimatedH = 220;
+        absentTeachers.forEach(abs => {
+          estimatedH += 64;
+          const tSched = SCHEDULE[abs]?.[currentDay] || {};
+          PERIODS.forEach(p => { if (tSched[p]) estimatedH += 40; });
+          estimatedH += 30;
+        });
+        estimatedH += 110;
+
+        const logicalHeight = Math.max(500, estimatedH);
+        const canvas = document.createElement('canvas');
+        const scale = 2;
+        canvas.width = logicalWidth * scale;
+        canvas.height = logicalHeight * scale;
+
+        const ctx = canvas.getContext('2d');
+        ctx.scale(scale, scale);
+
+        // BG
+        ctx.fillStyle = '#FAF7EE';
+        ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+        ctx.strokeStyle = '#E5DFC9';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(16, 16, logicalWidth - 32, logicalHeight - 32);
+
+        let curY = padding + 10;
+        ctx.fillStyle = '#1B382B';
+        ctx.font = 'bold 24px Georgia, serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('COLEGIO SANTO DOMINGO', padding, curY);
+
+        ctx.fillStyle = '#C69224';
+        ctx.font = 'bold 12px Arial, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('NIVEL SECUNDARIO', logicalWidth - padding, curY - 4);
+
+        curY += 26;
+        ctx.fillStyle = '#1C2920';
+        ctx.font = 'bold 28px Georgia, serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('Plan Diario de Sustitución — ' + currentDay.toUpperCase(), padding, curY);
+
+        curY += 24;
+        ctx.beginPath();
+        ctx.moveTo(padding, curY);
+        ctx.lineTo(logicalWidth - padding, curY);
+        ctx.strokeStyle = '#C69224';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        curY += 30;
+
+        // Render Absent Sections
+        absentTeachers.forEach((abs, idx) => {
+          const tSched = SCHEDULE[abs]?.[currentDay] || {};
+          drawRoundedRect(ctx, padding, curY, contentWidth, 36, 6, '#1B382B');
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = 'bold 15px Georgia, serif';
+          ctx.textAlign = 'left';
+          ctx.fillText((idx + 1) + '. PROF. ' + abs, padding + 16, curY + 23);
+
+          curY += 44;
+
+          // Table Header
+          ctx.fillStyle = '#EBE5D3';
+          ctx.fillRect(padding, curY, contentWidth, 24);
+          ctx.fillStyle = '#1C2920';
+          ctx.font = 'bold 11px Arial, sans-serif';
+          ctx.fillText('PERÍODO / HORA', padding + 12, curY + 16);
+          ctx.fillText('CURSO / GRUPO', padding + 170, curY + 16);
+          ctx.fillText('ASIGNATURA', padding + 310, curY + 16);
+          ctx.fillText('SUSTITUTO ASIGNADO', padding + 540, curY + 16);
+
+          curY += 24;
+
+          let rIdx = 0;
+          PERIODS.forEach(p => {
+            const slot = tSched[p];
+            if (!slot) return;
+            const sub = assignments[abs]?.[p];
+
+            ctx.fillStyle = rIdx % 2 === 0 ? '#FFFFFF' : '#F6F2E7';
+            ctx.fillRect(padding, curY, contentWidth, 36);
+
+            // Circle
+            ctx.beginPath();
+            ctx.arc(padding + 22, curY + 18, 10, 0, Math.PI * 2);
+            ctx.fillStyle = '#1B382B';
+            ctx.fill();
+            ctx.fillStyle = '#FFF';
+            ctx.font = 'bold 10px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(p, padding + 22, curY + 22);
+
+            ctx.fillStyle = '#1C2920';
+            ctx.font = '11px "Courier New", monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText(TIMES[p] || '', padding + 40, curY + 22);
+
+            ctx.font = 'bold 12px Arial, sans-serif';
+            ctx.fillText(slot.course, padding + 170, curY + 22);
+
+            ctx.font = '12px Arial, sans-serif';
+            ctx.fillText(ellipsize(ctx, slot.subject + (slot.isDoubleBlock ? ' [Doble]' : ''), 210), padding + 310, curY + 22);
+
+            // Pill
+            const isCov = Boolean(sub);
+            drawRoundedRect(ctx, padding + 535, curY + 5, 260, 26, 4, isCov ? '#E8F5E9' : '#FBEBEB', isCov ? '#A3D9A5' : '#F5B7B1');
+            ctx.fillStyle = isCov ? '#2D6A4F' : '#B94A48';
+            ctx.font = 'bold 12px Arial, sans-serif';
+            ctx.fillText(ellipsize(ctx, (isCov ? '✓ ' : '⚠ ') + (sub || 'SIN CUBRIR'), 240), padding + 545, curY + 22);
+
+            curY += 36;
+            rIdx++;
+          });
+
+          curY += 24;
+        });
+
+        // Footer
+        ctx.strokeStyle = '#E5DFC9';
+        ctx.beginPath();
+        ctx.moveTo(padding, curY);
+        ctx.lineTo(logicalWidth - padding, curY);
+        ctx.stroke();
+
+        curY += 20;
+        ctx.fillStyle = '#1C2920';
+        ctx.font = 'bold 12px Georgia, serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('COLEGIO SANTO DOMINGO • DEPARTAMENTO DE COORDINACIÓN ACADÉMICA', padding, curY);
+        ctx.fillStyle = '#5A6E63';
+        ctx.font = '11px Arial, sans-serif';
+        wrapText(ctx, 'Recreo: ' + RECESS_TIME.time + '. Asistencia puntual requerida.', padding, curY + 16, contentWidth, 16);
+
+        canvas.toBlob(blob => {
+          if (!blob) { alert("Error al generar imagen"); return; }
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'Plan_Sustitucion_' + currentDay + '.png';
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }, 'image/png');
+
+      } catch (err) {
+        alert("Error exportando imagen: " + err.message);
+      }
+    };
+
+    // Export Individual Image
+    document.getElementById('btnExportIndividualImage').onclick = () => {
+      const subName = document.getElementById('substituteSelect').value;
+      if (!subName) {
+        alert("Seleccione un docente sustituto.");
+        return;
+      }
+
+      const tasks = [];
+      for (const abs of Object.keys(assignments)) {
+        PERIODS.forEach(p => {
+          if (assignments[abs]?.[p] === subName) {
+            const slot = SCHEDULE[abs]?.[currentDay]?.[p];
+            if (slot) {
+              tasks.push({ p, time: TIMES[p], course: slot.course, subject: slot.subject, abs });
+            }
+          }
+        });
+      }
+
+      if (tasks.length === 0) {
+        alert("Este profesor no tiene sustituciones asignadas hoy.");
+        return;
+      }
+
+      try {
+        const logicalWidth = 650;
+        const padding = 36;
+        const contentWidth = logicalWidth - padding * 2;
+        const logicalHeight = 240 + tasks.length * 72 + 80;
+
+        const canvas = document.createElement('canvas');
+        const scale = 2;
+        canvas.width = logicalWidth * scale;
+        canvas.height = logicalHeight * scale;
+
+        const ctx = canvas.getContext('2d');
+        ctx.scale(scale, scale);
+
+        ctx.fillStyle = '#FAF7EE';
+        ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+        ctx.strokeStyle = '#E5DFC9';
+        ctx.strokeRect(14, 14, logicalWidth - 28, logicalHeight - 28);
+
+        let curY = padding + 10;
+        ctx.fillStyle = '#C69224';
+        ctx.font = 'bold 11px Arial, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('COLEGIO SANTO DOMINGO • NIVEL SECUNDARIO', padding, curY);
+
+        curY += 22;
+        ctx.fillStyle = '#1B382B';
+        ctx.font = 'bold 22px Georgia, serif';
+        ctx.fillText('Notificación de Sustitución Docente', padding, curY);
+
+        curY += 24;
+        drawRoundedRect(ctx, padding, curY, contentWidth, 54, 8, '#1B382B');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 17px Georgia, serif';
+        ctx.fillText('Docente: ' + subName, padding + 16, curY + 25);
+        ctx.fillStyle = '#D9E8DD';
+        ctx.font = '12px Arial, sans-serif';
+        ctx.fillText('Día: ' + currentDay.toUpperCase() + ' • ' + tasks.length + ' período(s) asignado(s)', padding + 16, curY + 44);
+
+        curY += 72;
+        ctx.fillStyle = '#1C2920';
+        ctx.font = 'bold 14px Arial, sans-serif';
+        ctx.fillText('PERÍODOS Y CLASES A CUBRIR:', padding, curY);
+
+        curY += 14;
+        tasks.forEach(t => {
+          drawRoundedRect(ctx, padding, curY, contentWidth, 62, 6, '#FFFFFF', '#E5DFC9');
+          ctx.beginPath();
+          ctx.arc(padding + 28, curY + 31, 15, 0, Math.PI * 2);
+          ctx.fillStyle = '#2D6A4F';
+          ctx.fill();
+          ctx.fillStyle = '#FFF';
+          ctx.font = 'bold 13px Arial, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(t.p, padding + 28, curY + 36);
+
+          ctx.textAlign = 'left';
+          ctx.fillStyle = '#1C2920';
+          ctx.font = 'bold 13px Arial, sans-serif';
+          ctx.fillText(t.course, padding + 54, curY + 24);
+          ctx.fillStyle = '#5A6E63';
+          ctx.font = '11px "Courier New", monospace';
+          ctx.fillText('⏰ ' + t.time, padding + 130, curY + 24);
+
+          ctx.font = '12px Arial, sans-serif';
+          ctx.fillStyle = '#1B382B';
+          ctx.fillText(ellipsize(ctx, 'Materia: ' + t.subject, 230), padding + 54, curY + 48);
+
+          ctx.fillStyle = '#7A4B1A';
+          ctx.font = 'italic 11px Georgia, serif';
+          ctx.fillText(ellipsize(ctx, 'Por ausencia de: Prof. ' + t.abs, 210), padding + 320, curY + 48);
+
+          curY += 72;
+        });
+
+        canvas.toBlob(blob => {
+          if (!blob) { alert("Error al generar imagen"); return; }
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'Sustitucion_' + subName.replace(/\s+/g, '_') + '_' + currentDay + '.png';
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }, 'image/png');
+
+      } catch (err) {
+        alert("Error exportando imagen: " + err.message);
+      }
+    };
+
+    // Initial render
+    renderAll();
+  </script>
+</body>
+</html>
